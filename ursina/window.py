@@ -13,7 +13,7 @@ from ursina import input_handler
 class Window(WindowProperties):
 
     def ready(self, title, icon, borderless, fullscreen, size, forced_aspect_ratio, position, vsync, editor_ui_enabled, window_type, render_mode):
-        loadPrcFileData('', 'window-title ursina')
+        self.window_type = window_type
         loadPrcFileData('', 'notify-level-util error')
         loadPrcFileData('', 'textures-auto-power-2 #t')
         loadPrcFileData('', 'load-file-type p3assimp')
@@ -73,6 +73,13 @@ class Window(WindowProperties):
         self.bottom = Vec2(0, -.5)
         self.center = Vec2(0, 0)
 
+    def late_ready(self,id,offset):
+        print("late ready")
+        self.setParentWindow(id)
+        self.setOrigin(offset[0],offset[1])
+        print('set parent window:', id, offset)
+        print(int(self.windowed_size[0]),int(self.windowed_size[1]))
+        self.size = Vec2(int(self.windowed_size[0]),int(self.windowed_size[1]))
 
     def apply_settings(self):
         self.forced_aspect_ratio = None # example: window.forced_aspect_ratio = 16/9
@@ -124,7 +131,7 @@ class Window(WindowProperties):
 
 
     def center_on_screen(self):
-        if application.window_type == 'none' or not self.main_monitor:
+        if application.window_type in ('none','tkinter') or not self.main_monitor:
             return
         x = self.main_monitor.x + ((self.main_monitor.width - self.size[0]) / 2)
         y = self.main_monitor.y + ((self.main_monitor.height - self.size[1]) / 2)
@@ -388,7 +395,7 @@ class Window(WindowProperties):
     @borderless.setter
     def borderless(self, value):
         self._borderless = value
-        if application.window_type == 'none':
+        if application.window_type in ('none','tkinter'):
             return
 
         self.setUndecorated(value)
